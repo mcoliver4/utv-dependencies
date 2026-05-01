@@ -1,0 +1,181 @@
+name: Build Dependencies
+
+on:
+  workflow_dispatch:
+    inputs:
+      dependency:
+        description: 'Dependency to build'
+        required: true
+        type: choice
+        options:
+          - Imath
+          - OpenColorIO
+          - OpenEXR
+          - OpenImageIO
+          - FFmpeg
+          - boost
+          - OpenJPH
+      version:
+        description: 'Version tag or branch (e.g., v3.3.2)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install Build Prerequisites
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential cmake git curl ninja-build \
+                                  libpng-dev libtiff-dev libjpeg-dev libwebp-dev \
+                                  libssl-dev yasm pkg-config ruby ruby-dev rubygems
+          sudo gem install fpm
+
+      - name: Fetch Previously Built Dependencies
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Download any previously built custom dependencies so current builds can link against them
+          gh release download latest -R ${{ github.repository }} -p "*.deb" || echo "No previous DEB packages found or release doesn't exist yet."
+          if ls *.deb 1> /dev/null 2>&1; then
+            sudo apt-get install -y ./*.deb
+          fi
+
+      - name: Clone Dependency
+        run: |
+          case "${{ inputs.dependency }}" in
+            OpenEXR|OpenColorIO|OpenImageIO|Imath)
+              REPO="https://github.com/AcademySoftwareFoundation/${{ inputs.dependency }}.git"
+              ;;
+            FFmpeg)
+              REPO="https://github.com/FFmpeg/FFmpeg.git"
+              ;;
+            boost)
+              REPO="https://github.com/boostorg/boost.git"
+              ;;
+            OpenJPH)
+              REPO="https://github.com/aous72/OpenJPH.git"
+              ;;
+          esac
+          git clone --branch ${{ inputs.version }} --depth 1 $REPO /tmp/src
+
+      - name: Build and Package (CMake)
+        if: ${{ inputs.dependency != 'FFmpeg' && inputs.dependency != 'boost' }}
+        run: |
+          cd /tmp/src
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
+          cmake --build build -j$(nproc)
+          cmake --install build
+          fpm -s dir -t deb -n ${{ inputs.dependency }} -v ${{ inputs.version }} -C /tmp/installdir .
+          cp *.deb ${{ github.workspace }}/
+
+      - name: Build and Package (FFmpeg)
+        if: ${{ inputs.dependency == 'FFmpeg' }}
+        run: |
+          cd /tmp/src
+          ./configure --prefix=/tmp/installdir/usr/local --enable-shared --disable-static
+          make -j$(nproc)
+          make install
+          fpm -s dir -t deb -n ffmpeg -v ${{ inputs.version }} -C /tmp/installdir .
+          cp *.deb ${{ github.workspace }}/
+
+      - name: Build and Package (Boost)
+        if: ${{ inputs.dependency == 'boost' }}
+        run: |
+          cd /tmp/src
+          git submodule update --init --recursive
+          ./bootstrap.sh --prefix=/tmp/installdir/usr/local
+          ./b2 -j$(nproc) variant=release link=shared install
+          fpm -s dir -t deb -n boost -v ${{ inputs.version }} -C /tmp/installdir .
+          cp *.deb ${{ github.workspace }}/
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: "*.deb"
+          make_latest: true
+
+  build-rocky:
+    runs-on: ubuntu-latest
+    container: rockylinux:9
+    steps:
+      - name: Install Build Prerequisites
+        run: |
+          dnf install -y epel-release
+          dnf config-manager --set-enabled crb
+          dnf groupinstall -y "Development Tools"
+          dnf install -y cmake git curl ninja-build rpm-build yasm \
+                         libpng-devel libtiff-devel libjpeg-turbo-devel libwebp-devel \
+                         openssl-devel ruby ruby-devel rubygems
+          gem install fpm
+
+      - name: Fetch Previously Built Dependencies
+        run: |
+          dnf install -y gh
+          # Download any previously built custom dependencies so current builds can link against them
+          gh release download latest -R ${{ github.repository }} -p "*.rpm" || echo "No previous RPM packages found or release doesn't exist yet."
+          if ls *.rpm 1> /dev/null 2>&1; then
+            dnf install -y ./*.rpm
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone Dependency
+        run: |
+          case "${{ inputs.dependency }}" in
+            OpenEXR|OpenColorIO|OpenImageIO|Imath)
+              REPO="https://github.com/AcademySoftwareFoundation/${{ inputs.dependency }}.git"
+              ;;
+            FFmpeg)
+              REPO="https://github.com/FFmpeg/FFmpeg.git"
+              ;;
+            boost)
+              REPO="https://github.com/boostorg/boost.git"
+              ;;
+            OpenJPH)
+              REPO="https://github.com/aous72/OpenJPH.git"
+              ;;
+          esac
+          git clone --branch ${{ inputs.version }} --depth 1 $REPO /tmp/src
+
+      - name: Build and Package (CMake)
+        if: ${{ inputs.dependency != 'FFmpeg' && inputs.dependency != 'boost' }}
+        run: |
+          cd /tmp/src
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
+          cmake --build build -j$(nproc)
+          cmake --install build
+          fpm -s dir -t rpm -n ${{ inputs.dependency }} -v ${{ inputs.version }} -C /tmp/installdir .
+          cp *.rpm ${{ github.workspace }}/
+
+      - name: Build and Package (FFmpeg)
+        if: ${{ inputs.dependency == 'FFmpeg' }}
+        run: |
+          cd /tmp/src
+          ./configure --prefix=/tmp/installdir/usr/local --enable-shared --disable-static
+          make -j$(nproc)
+          make install
+          fpm -s dir -t rpm -n ffmpeg -v ${{ inputs.version }} -C /tmp/installdir .
+          cp *.rpm ${{ github.workspace }}/
+
+      - name: Build and Package (Boost)
+        if: ${{ inputs.dependency == 'boost' }}
+        run: |
+          cd /tmp/src
+          git submodule update --init --recursive
+          ./bootstrap.sh --prefix=/tmp/installdir/usr/local
+          ./b2 -j$(nproc) variant=release link=shared install
+          fpm -s dir -t rpm -n boost -v ${{ inputs.version }} -C /tmp/installdir .
+          cp *.rpm ${{ github.workspace }}/
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: "*.rpm"
+          make_latest: true
