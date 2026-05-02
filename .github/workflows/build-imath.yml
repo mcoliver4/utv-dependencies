@@ -28,7 +28,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release download latest -R ${{ github.repository }} -p "*.deb" || echo "No previous DEB packages found or release doesn't exist yet."
+          gh release download ubuntu-24.04 -R ${{ github.repository }} -p "*.deb" || echo "No previous DEB packages found or release doesn't exist yet."
           if ls *.deb 1> /dev/null 2>&1; then
             sudo apt-get install -y ./*.deb
           fi
@@ -51,7 +51,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd ${{ github.workspace }}
-          gh release upload latest *.deb --clobber || gh release create latest *.deb -t "Latest Dependencies" -n "Rolling release"
+          gh release upload ubuntu-24.04 *.deb --clobber || gh release create ubuntu-24.04 *.deb -t "Ubuntu 24.04 Dependencies" -n "Rolling release"
 
   build-rocky:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
       - name: Fetch Previously Built Dependencies
         run: |
           dnf install -y --allowerasing gh
-          gh release download latest -R ${{ github.repository }} -p "*.rpm" || echo "No previous RPM packages found or release doesn't exist yet."
+          gh release download rocky-9 -R ${{ github.repository }} -p "*.rpm" || echo "No previous RPM packages found or release doesn't exist yet."
           if ls *.rpm 1> /dev/null 2>&1; then
             dnf install -y ./*.rpm
           fi
@@ -95,4 +95,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd ${{ github.workspace }}
-          gh release upload latest *.rpm --clobber || gh release create latest *.rpm -t "Latest Dependencies" -n "Rolling release"
+          gh release upload rocky-9 *.rpm --clobber || gh release create rocky-9 *.rpm -t "Rocky 9 Dependencies" -n "Rolling release"
