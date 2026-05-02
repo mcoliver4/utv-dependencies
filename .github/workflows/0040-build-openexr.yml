@@ -1,4 +1,4 @@
-name: 10 - Build Boost
+name: 0040 - Build OpenEXR
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
         description: 'Version tag or branch to build'
         required: true
         type: string
-        default: 'boost-1.91.0'
+        default: 'v3.4.11'
 
 permissions:
   contents: write
@@ -34,15 +34,15 @@ jobs:
           fi
 
       - name: Clone Dependency
-        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/boostorg/boost.git /tmp/src
+        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/openexr.git /tmp/src
 
-      - name: Build and Package (Boost)
+      - name: Build and Package (CMake)
         run: |
           cd /tmp/src
-          git submodule update --init --recursive
-          ./bootstrap.sh --prefix=/tmp/installdir/usr/local
-          ./b2 -j$(nproc) variant=release link=shared install
-          fpm -s dir -t deb -n boost -v ${{ inputs.version }} -C /tmp/installdir .
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
+          cmake --build build -j$(nproc)
+          cmake --install build
+          fpm -s dir -t deb -n openexr -v ${{ inputs.version }} -C /tmp/installdir .
           mkdir -p ${{ github.workspace }}
           cp *.deb ${{ github.workspace }}/
 
@@ -78,15 +78,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clone Dependency
-        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/boostorg/boost.git /tmp/src
+        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/openexr.git /tmp/src
 
-      - name: Build and Package (Boost)
+      - name: Build and Package (CMake)
         run: |
           cd /tmp/src
-          git submodule update --init --recursive
-          ./bootstrap.sh --prefix=/tmp/installdir/usr/local
-          ./b2 -j$(nproc) variant=release link=shared install
-          fpm -s dir -t rpm -n boost -v ${{ inputs.version }} -C /tmp/installdir .
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
+          cmake --build build -j$(nproc)
+          cmake --install build
+          fpm -s dir -t rpm -n openexr -v ${{ inputs.version }} -C /tmp/installdir .
           mkdir -p ${{ github.workspace }}
           cp *.rpm ${{ github.workspace }}/
 
