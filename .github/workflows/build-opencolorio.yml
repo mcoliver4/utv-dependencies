@@ -7,7 +7,7 @@ on:
         description: 'Version tag or branch to build'
         required: true
         type: string
-        default: 'v2.4.2'
+        default: 'v2.5.1'
 
 permissions:
   contents: write

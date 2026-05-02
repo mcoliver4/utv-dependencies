@@ -7,7 +7,7 @@ on:
         description: 'Version tag or branch to build'
         required: true
         type: string
-        default: 'boost-1.87.0'
+        default: 'boost-1.91.0'
 
 permissions:
   contents: write
