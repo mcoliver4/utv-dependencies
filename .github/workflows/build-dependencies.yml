@@ -97,7 +97,7 @@ jobs:
           cp *.deb ${{ github.workspace }}/
 
       - name: Upload to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           files: "*.deb"
@@ -180,7 +180,7 @@ jobs:
           cp *.rpm ${{ github.workspace }}/
 
       - name: Upload to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           files: "*.rpm"
