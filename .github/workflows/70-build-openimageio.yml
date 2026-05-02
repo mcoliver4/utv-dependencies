@@ -1,4 +1,4 @@
-name: Build OpenColorIO
+name: 70 - Build OpenImageIO
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
         description: 'Version tag or branch to build'
         required: true
         type: string
-        default: 'v2.5.1'
+        default: 'v3.1.12.0'
 
 permissions:
   contents: write
@@ -34,7 +34,7 @@ jobs:
           fi
 
       - name: Clone Dependency
-        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/OpenColorIO.git /tmp/src
+        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/OpenImageIO.git /tmp/src
 
       - name: Build and Package (CMake)
         run: |
@@ -42,7 +42,7 @@ jobs:
           cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
           cmake --build build -j$(nproc)
           cmake --install build
-          fpm -s dir -t deb -n opencolorio -v ${{ inputs.version }} -C /tmp/installdir .
+          fpm -s dir -t deb -n openimageio -v ${{ inputs.version }} -C /tmp/installdir .
           mkdir -p ${{ github.workspace }}
           cp *.deb ${{ github.workspace }}/
 
@@ -78,7 +78,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clone Dependency
-        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/OpenColorIO.git /tmp/src
+        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/OpenImageIO.git /tmp/src
 
       - name: Build and Package (CMake)
         run: |
@@ -86,7 +86,7 @@ jobs:
           cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
           cmake --build build -j$(nproc)
           cmake --install build
-          fpm -s dir -t rpm -n opencolorio -v ${{ inputs.version }} -C /tmp/installdir .
+          fpm -s dir -t rpm -n openimageio -v ${{ inputs.version }} -C /tmp/installdir .
           mkdir -p ${{ github.workspace }}
           cp *.rpm ${{ github.workspace }}/
 

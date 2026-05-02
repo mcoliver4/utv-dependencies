@@ -1,4 +1,4 @@
-name: Build OpenEXR
+name: 20 - Build FFmpeg
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
         description: 'Version tag or branch to build'
         required: true
         type: string
-        default: 'v3.4.11'
+        default: 'n8.2'
 
 permissions:
   contents: write
@@ -34,15 +34,15 @@ jobs:
           fi
 
       - name: Clone Dependency
-        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/openexr.git /tmp/src
+        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/FFmpeg/FFmpeg.git /tmp/src
 
-      - name: Build and Package (CMake)
+      - name: Build and Package (FFmpeg)
         run: |
           cd /tmp/src
-          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
-          cmake --build build -j$(nproc)
-          cmake --install build
-          fpm -s dir -t deb -n openexr -v ${{ inputs.version }} -C /tmp/installdir .
+          ./configure --prefix=/tmp/installdir/usr/local --enable-shared --disable-static
+          make -j$(nproc)
+          make install
+          fpm -s dir -t deb -n ffmpeg -v ${{ inputs.version }} -C /tmp/installdir .
           mkdir -p ${{ github.workspace }}
           cp *.deb ${{ github.workspace }}/
 
@@ -78,15 +78,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clone Dependency
-        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/AcademySoftwareFoundation/openexr.git /tmp/src
+        run: git clone --branch ${{ inputs.version }} --depth 1 https://github.com/FFmpeg/FFmpeg.git /tmp/src
 
-      - name: Build and Package (CMake)
+      - name: Build and Package (FFmpeg)
         run: |
           cd /tmp/src
-          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/installdir/usr/local -DBUILD_TESTING=OFF -DOIIO_BUILD_TESTS=OFF
-          cmake --build build -j$(nproc)
-          cmake --install build
-          fpm -s dir -t rpm -n openexr -v ${{ inputs.version }} -C /tmp/installdir .
+          ./configure --prefix=/tmp/installdir/usr/local --enable-shared --disable-static
+          make -j$(nproc)
+          make install
+          fpm -s dir -t rpm -n ffmpeg -v ${{ inputs.version }} -C /tmp/installdir .
           mkdir -p ${{ github.workspace }}
           cp *.rpm ${{ github.workspace }}/
 
