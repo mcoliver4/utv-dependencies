@@ -109,14 +109,14 @@ jobs:
           dnf install -y epel-release
           dnf config-manager --set-enabled crb
           dnf groupinstall -y "Development Tools"
-          dnf install -y cmake git curl ninja-build rpm-build yasm \
+          dnf install -y --allowerasing cmake git curl ninja-build rpm-build yasm \
                          libpng-devel libtiff-devel libjpeg-turbo-devel libwebp-devel \
                          openssl-devel ruby ruby-devel rubygems
           gem install fpm
 
       - name: Fetch Previously Built Dependencies
         run: |
-          dnf install -y gh
+          dnf install -y --allowerasing gh
           # Download any previously built custom dependencies so current builds can link against them
           gh release download latest -R ${{ github.repository }} -p "*.rpm" || echo "No previous RPM packages found or release doesn't exist yet."
           if ls *.rpm 1> /dev/null 2>&1; then
