@@ -71,6 +71,7 @@ jobs:
           cmake --build build -j$(nproc)
           cmake --install build
           fpm -s dir -t deb -n ${{ inputs.dependency }} -v ${{ inputs.version }} -C /tmp/installdir .
+          mkdir -p ${{ github.workspace }}
           cp *.deb ${{ github.workspace }}/
 
       - name: Build and Package (FFmpeg)
@@ -81,6 +82,7 @@ jobs:
           make -j$(nproc)
           make install
           fpm -s dir -t deb -n ffmpeg -v ${{ inputs.version }} -C /tmp/installdir .
+          mkdir -p ${{ github.workspace }}
           cp *.deb ${{ github.workspace }}/
 
       - name: Build and Package (Boost)
@@ -91,6 +93,7 @@ jobs:
           ./bootstrap.sh --prefix=/tmp/installdir/usr/local
           ./b2 -j$(nproc) variant=release link=shared install
           fpm -s dir -t deb -n boost -v ${{ inputs.version }} -C /tmp/installdir .
+          mkdir -p ${{ github.workspace }}
           cp *.deb ${{ github.workspace }}/
 
       - name: Upload to Release
@@ -151,6 +154,7 @@ jobs:
           cmake --build build -j$(nproc)
           cmake --install build
           fpm -s dir -t rpm -n ${{ inputs.dependency }} -v ${{ inputs.version }} -C /tmp/installdir .
+          mkdir -p ${{ github.workspace }}
           cp *.rpm ${{ github.workspace }}/
 
       - name: Build and Package (FFmpeg)
@@ -161,6 +165,7 @@ jobs:
           make -j$(nproc)
           make install
           fpm -s dir -t rpm -n ffmpeg -v ${{ inputs.version }} -C /tmp/installdir .
+          mkdir -p ${{ github.workspace }}
           cp *.rpm ${{ github.workspace }}/
 
       - name: Build and Package (Boost)
@@ -171,6 +176,7 @@ jobs:
           ./bootstrap.sh --prefix=/tmp/installdir/usr/local
           ./b2 -j$(nproc) variant=release link=shared install
           fpm -s dir -t rpm -n boost -v ${{ inputs.version }} -C /tmp/installdir .
+          mkdir -p ${{ github.workspace }}
           cp *.rpm ${{ github.workspace }}/
 
       - name: Upload to Release
