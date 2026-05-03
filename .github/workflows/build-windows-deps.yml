@@ -24,10 +24,17 @@ jobs:
 
       - name: Export Binary Archive
         run: |
-          vcpkg export boost openjph imath openexr opencolorio ffmpeg openimageio yaml-cpp spdlog icu libjpeg-turbo --zip --output=utv-deps-windows-x64
+          vcpkg export boost openjph imath openexr opencolorio ffmpeg openimageio yaml-cpp spdlog icu libjpeg-turbo --raw --output-dir=exported_deps --output=utv-deps-windows-x64
+
+      - name: Package MSI Installer (CPack WiX)
+        run: |
+          mkdir build
+          cd build
+          cmake -G "Visual Studio 17 2022" ..
+          cpack -G WIX
 
       - name: Upload to Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload windows-x64 utv-deps-windows-x64.zip --clobber || gh release create windows-x64 utv-deps-windows-x64.zip -t "Windows x64 Dependencies" -n "Rolling release powered by vcpkg"
+          gh release upload windows-x64 build/OpenUTVDeps-2026.1.0-win64.msi --clobber || gh release create windows-x64 build/OpenUTVDeps-2026.1.0-win64.msi -t "Windows x64 Dependencies" -n "Rolling release powered by vcpkg"
