@@ -16,7 +16,8 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: 'master'
+          vcpkgGitCommitId: '4ebb30167f14487dcb71fac13efbf63273ab6a3f'
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
 
       - name: Install Dependencies
         run: |
