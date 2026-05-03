@@ -19,6 +19,11 @@ jobs:
           vcpkgGitCommitId: '4ebb30167f14487dcb71fac13efbf63273ab6a3f'
           vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
 
+      - name: Force Release Build Only
+        shell: bash
+        run: |
+          echo "set(VCPKG_BUILD_TYPE release)" >> ${{ runner.workspace }}/vcpkg/triplets/x64-windows.cmake
+
       - name: Install Dependencies
         run: |
           vcpkg install boost dav1d doctest expat ffmpeg bdwgc glew imath libjpeg-turbo nanobind opencolorio openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp] openexr openjpeg openjph openssl pcre2 libpng libraw spdlog tiff libwebp yaml-cpp zlib libatomic-ops --triplet x64-windows
