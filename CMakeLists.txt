@@ -8,8 +8,7 @@ set(CPACK_GENERATOR "WIX")
 set(CPACK_PACKAGE_NAME "OpenUTVDeps")
 set(CPACK_PACKAGE_VENDOR "OpenUTV")
 set(CPACK_WIX_UPGRADE_GUID "D2305530-58FF-4054-94E6-37D35E445EFA")
-set(CPACK_WIX_INSTALL_SCOPE "perUser")
-
+# Use default perMachine scope so WiX installs to ProgramFilesFolder and auto-generates GUIDs successfully
 set(CPACK_WIX_ROOT_FOLDER_ID "OPENUTV_DEPS_DIR")
 
 # Define a custom WIX source file to inject the Environment component directly using pure WiX
@@ -18,7 +17,7 @@ file(WRITE ${CMAKE_BINARY_DIR}/extra.wxs "<?xml version=\"1.0\" encoding=\"UTF-8
     <Fragment>
         <DirectoryRef Id=\"OPENUTV_DEPS_DIR\">
             <Component Id=\"EnvVarComponent\" Guid=\"B4E63C47-D611-4770-9856-F1439F68B610\">
-                <Environment Id=\"UpdateOpenUTVDepsRoot\" Action=\"set\" Name=\"OPENUTV_DEPS_ROOT\" Value=\"[OPENUTV_DEPS_DIR]\" System=\"no\" Permanent=\"no\" />
+                <Environment Id=\"UpdateOpenUTVDepsRoot\" Action=\"set\" Name=\"OPENUTV_DEPS_ROOT\" Value=\"[OPENUTV_DEPS_DIR]\" System=\"yes\" Permanent=\"no\" />
             </Component>
         </DirectoryRef>
     </Fragment>
