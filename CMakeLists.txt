@@ -12,8 +12,8 @@ set(CPACK_WIX_INSTALL_SCOPE "perUser")
 
 # Add the environment variable using WIX patch
 file(WRITE ${CMAKE_BINARY_DIR}/wix_patch.xml "
-<CPackWiXFragment Id=\\"CM_CP_deps\\">
-  <Environment Id=\\"UpdateOpenUTVDepsRoot\\" Action=\\"set\\" Name=\\"OPENUTV_DEPS_ROOT\\" Value=\\"[INSTALLFOLDER]\\" System=\\"no\\" Permanent=\\"no\\" />
+<CPackWiXFragment Id=\"CM_CP_deps\">
+  <Environment Id=\"UpdateOpenUTVDepsRoot\" Action=\"set\" Name=\"OPENUTV_DEPS_ROOT\" Value=\"[INSTALLFOLDER]\" System=\"no\" Permanent=\"no\" />
 </CPackWiXFragment>
 ")
 set(CPACK_WIX_PATCH_FILE "${CMAKE_BINARY_DIR}/wix_patch.xml")
