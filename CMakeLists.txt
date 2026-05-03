@@ -12,7 +12,7 @@ set(CPACK_WIX_INSTALL_SCOPE "perUser")
 
 set(CPACK_WIX_ROOT_FOLDER_ID "OPENUTV_DEPS_DIR")
 
-# Define a custom WIX source file to inject the Environment component reliably
+# Define a custom WIX source file to inject the Environment component directly using pure WiX
 file(WRITE ${CMAKE_BINARY_DIR}/extra.wxs "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <Wix xmlns=\"http://schemas.microsoft.com/wix/2006/wi\">
     <Fragment>
@@ -22,18 +22,13 @@ file(WRITE ${CMAKE_BINARY_DIR}/extra.wxs "<?xml version=\"1.0\" encoding=\"UTF-8
             </Component>
         </DirectoryRef>
     </Fragment>
+    <Fragment>
+        <FeatureRef Id=\"ProductFeature\">
+            <ComponentRef Id=\"EnvVarComponent\" />
+        </FeatureRef>
+    </Fragment>
 </Wix>
 ")
 set(CPACK_WIX_EXTRA_SOURCES "${CMAKE_BINARY_DIR}/extra.wxs")
-
-# Patch the main Feature to include our custom Component
-file(WRITE ${CMAKE_BINARY_DIR}/wix_patch.xml "
-<CPackWiXPatch>
-  <CPackWiXFragment Id=\"#PRODUCTFEATURE\">
-    <ComponentRef Id=\"EnvVarComponent\" />
-  </CPackWiXFragment>
-</CPackWiXPatch>
-")
-set(CPACK_WIX_PATCH_FILE "${CMAKE_BINARY_DIR}/wix_patch.xml")
 
 include(CPack)
