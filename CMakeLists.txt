@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(OpenUTVDependencies VERSION 2026.1.0)
+project(OpenUTVDependencies VERSION 26.1.0)
 
 # Install the raw vcpkg export
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/exported_deps/utv-deps-windows-x64/ DESTINATION . COMPONENT deps)

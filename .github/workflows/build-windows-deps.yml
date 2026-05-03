@@ -123,7 +123,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload windows-x64 build/OpenUTVDeps-2026.1.0-win64.msi --clobber || gh release create windows-x64 build/OpenUTVDeps-2026.1.0-win64.msi -t "Windows x64 Dependencies" -n "Rolling release powered by vcpkg"
+          gh release upload windows-x64 build/OpenUTVDeps-26.1.0-win64.msi --clobber || gh release create windows-x64 build/OpenUTVDeps-26.1.0-win64.msi -t "Windows x64 Dependencies" -n "Rolling release powered by vcpkg"
 
       - name: Save vcpkg downloads
         uses: actions/cache/save@v5
