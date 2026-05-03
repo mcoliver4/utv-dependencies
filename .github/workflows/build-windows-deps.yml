@@ -112,11 +112,12 @@ jobs:
             --raw --output-dir=exported_deps --output=utv-deps-windows-x64
 
       - name: Package MSI Installer (CPack WiX)
+        shell: bash
         run: |
           mkdir build
           cd build
           cmake -G "Visual Studio 17 2022" ..
-          cpack -G WIX -C Release --debug --verbose || { echo "WXS DUMP:"; cat _CPack_Packages/win64/WIX/*.wxs; exit 1; }
+          cpack -G WIX -C Release --debug --verbose || { echo "WIX LOG:"; cat _CPack_Packages/win64/WIX/wix.log; echo "WXS DUMP:"; cat _CPack_Packages/win64/WIX/*.wxs; exit 1; }
 
       - name: Upload to Release
         env:
