@@ -8,12 +8,22 @@ on:
         required: true
         type: string
         default: 'n8.2'
+      target_os:
+        description: 'Target OS to build'
+        required: true
+        type: choice
+        default: 'all'
+        options:
+          - all
+          - ubuntu-24.04
+          - rocky-9
 
 permissions:
   contents: write
 
 jobs:
   build-ubuntu:
+    if: ${{ github.event.inputs.target_os == 'ubuntu-24.04' || github.event.inputs.target_os == 'all' }}
     runs-on: ubuntu-24.04
     steps:
       - name: Install Build Prerequisites
@@ -54,6 +64,7 @@ jobs:
           gh release upload ubuntu-24.04 *.deb --clobber || gh release create ubuntu-24.04 *.deb -t "Ubuntu 24.04 Dependencies" -n "Rolling release"
 
   build-rocky:
+    if: ${{ github.event.inputs.target_os == 'rocky-9' || github.event.inputs.target_os == 'all' }}
     runs-on: ubuntu-latest
     container: rockylinux:9
     steps:
