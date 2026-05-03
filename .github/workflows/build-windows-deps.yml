@@ -1,0 +1,33 @@
+name: Windows - Build Dependencies (vcpkg)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 'master'
+
+      - name: Install Dependencies
+        run: |
+          vcpkg install boost openjph imath openexr opencolorio ffmpeg openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp] yaml-cpp spdlog icu libjpeg-turbo --triplet x64-windows
+
+      - name: Export Binary Archive
+        run: |
+          vcpkg export boost openjph imath openexr opencolorio ffmpeg openimageio yaml-cpp spdlog icu libjpeg-turbo --zip --output=utv-deps-windows-x64
+
+      - name: Upload to Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload windows-x64 utv-deps-windows-x64.zip --clobber || gh release create windows-x64 utv-deps-windows-x64.zip -t "Windows x64 Dependencies" -n "Rolling release powered by vcpkg"
