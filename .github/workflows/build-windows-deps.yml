@@ -20,9 +20,8 @@ jobs:
           vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
 
       - name: Force Release Build Only
-        shell: bash
         run: |
-          echo "set(VCPKG_BUILD_TYPE release)" >> ${{ runner.workspace }}/vcpkg/triplets/x64-windows.cmake
+          Add-Content -Path "${{ runner.workspace }}/vcpkg/triplets/x64-windows.cmake" -Value "set(VCPKG_BUILD_TYPE release)" -Encoding ascii
 
       - name: Install Dependencies
         run: |
