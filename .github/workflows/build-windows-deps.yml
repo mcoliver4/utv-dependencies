@@ -24,12 +24,66 @@ jobs:
           Add-Content -Path "${{ runner.workspace }}/vcpkg/triplets/x64-windows.cmake" -Value "set(VCPKG_BUILD_TYPE release)" -Encoding ascii
 
       - name: Install Dependencies
+        shell: bash
         run: |
-          vcpkg install boost dav1d doctest expat ffmpeg bdwgc glew imath libjpeg-turbo nanobind opencolorio openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp] openexr openjpeg openjph openssl pcre2 libpng libraw spdlog tiff libwebp yaml-cpp zlib libatomic-ops --triplet x64-windows
+          vcpkg install \
+            bdwgc \
+            boost \
+            dav1d \
+            doctest \
+            expat \
+            ffmpeg \
+            glew \
+            imath \
+            libatomic-ops \
+            libjpeg-turbo \
+            libpng \
+            libraw \
+            libwebp \
+            nanobind \
+            opencolorio \
+            openexr \
+            openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp] \
+            openjpeg \
+            openjph \
+            openssl \
+            pcre2 \
+            spdlog \
+            tiff \
+            yaml-cpp \
+            zlib \
+            --triplet x64-windows
 
       - name: Export Binary Archive
+        shell: bash
         run: |
-          vcpkg export boost dav1d doctest expat ffmpeg bdwgc glew imath libjpeg-turbo nanobind opencolorio openimageio openexr openjpeg openjph openssl pcre2 libpng libraw spdlog tiff libwebp yaml-cpp zlib libatomic-ops --raw --output-dir=exported_deps --output=utv-deps-windows-x64
+          vcpkg export \
+            bdwgc \
+            boost \
+            dav1d \
+            doctest \
+            expat \
+            ffmpeg \
+            glew \
+            imath \
+            libatomic-ops \
+            libjpeg-turbo \
+            libpng \
+            libraw \
+            libwebp \
+            nanobind \
+            opencolorio \
+            openexr \
+            openimageio \
+            openjpeg \
+            openjph \
+            openssl \
+            pcre2 \
+            spdlog \
+            tiff \
+            yaml-cpp \
+            zlib \
+            --raw --output-dir=exported_deps --output=utv-deps-windows-x64
 
       - name: Package MSI Installer (CPack WiX)
         run: |
