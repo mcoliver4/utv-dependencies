@@ -7,6 +7,9 @@ permissions:
   contents: write
   actions: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -23,6 +26,14 @@ jobs:
       - name: Force Release Build Only
         run: |
           Add-Content -Path "${{ runner.workspace }}/vcpkg/triplets/x64-windows.cmake" -Value "set(VCPKG_BUILD_TYPE release)" -Encoding ascii
+
+      - name: Cache vcpkg downloads
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.workspace }}/vcpkg/downloads
+          key: vcpkg-downloads-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
+          restore-keys: |
+            vcpkg-downloads-${{ runner.os }}-
 
       - name: Install Dependencies
         shell: bash
@@ -53,6 +64,7 @@ jobs:
             tiff \
             yaml-cpp \
             zlib \
+            --clean-after-build \
             --triplet x64-windows
 
       - name: Export Binary Archive
@@ -91,7 +103,7 @@ jobs:
           mkdir build
           cd build
           cmake -G "Visual Studio 17 2022" ..
-          cpack -G WIX
+          cpack -G WIX -C Release
 
       - name: Upload to Release
         env:
