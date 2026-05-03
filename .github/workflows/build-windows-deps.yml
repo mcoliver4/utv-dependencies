@@ -9,6 +9,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_cache,readwrite"
 
 jobs:
   build-windows:
@@ -34,6 +35,14 @@ jobs:
           key: vcpkg-downloads-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
           restore-keys: |
             vcpkg-downloads-${{ runner.os }}-
+
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/vcpkg_cache
+          key: vcpkg-binaries-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
+          restore-keys: |
+            vcpkg-binaries-${{ runner.os }}-
 
       - name: Install Dependencies
         shell: bash
