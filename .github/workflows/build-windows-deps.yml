@@ -33,7 +33,7 @@ jobs:
           Add-Content -Path "${{ runner.workspace }}/vcpkg/triplets/x64-windows.cmake" -Value "set(VCPKG_BUILD_TYPE release)" -Encoding ascii
 
       - name: Restore vcpkg downloads
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ runner.workspace }}/vcpkg/downloads
           key: vcpkg-downloads-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
@@ -41,7 +41,7 @@ jobs:
             vcpkg-downloads-${{ runner.os }}-
 
       - name: Restore vcpkg binaries
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ github.workspace }}/vcpkg_cache
           key: vcpkg-binaries-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
@@ -125,14 +125,14 @@ jobs:
           gh release upload windows-x64 build/OpenUTVDeps-2026.1.0-win64.msi --clobber || gh release create windows-x64 build/OpenUTVDeps-2026.1.0-win64.msi -t "Windows x64 Dependencies" -n "Rolling release powered by vcpkg"
 
       - name: Save vcpkg downloads
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         if: always()
         with:
           path: ${{ runner.workspace }}/vcpkg/downloads
           key: vcpkg-downloads-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
 
       - name: Save vcpkg binaries
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         if: always()
         with:
           path: ${{ github.workspace }}/vcpkg_cache
