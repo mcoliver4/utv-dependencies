@@ -70,7 +70,7 @@ jobs:
             opencolorio[tools] \
             openexr[tools] \
             openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp,gif,jpegxl,libheif,tools] \
-            openjpeg[tools] \
+            openjpeg \
             openjph[tools] \
             openssl[tools] \
             pcre2[jit] \
