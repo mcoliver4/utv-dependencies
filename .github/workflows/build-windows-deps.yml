@@ -58,6 +58,7 @@ jobs:
             doctest \
             expat \
             ffmpeg \
+            freetype \
             glew \
             imath \
             libatomic-ops \
