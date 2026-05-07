@@ -69,13 +69,13 @@ jobs:
             nanobind \
             opencolorio \
             openexr \
-            openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp] \
+            openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp,gif,jpegxl,libheif] \
             openjpeg \
             openjph \
             openssl \
             pcre2 \
             spdlog \
-            tiff \
+            tiff[jpeg,lzma,zip,webp,zstd] \
             yaml-cpp \
             zlib \
             --clean-after-build \
