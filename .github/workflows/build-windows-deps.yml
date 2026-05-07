@@ -62,20 +62,20 @@ jobs:
             glew \
             imath \
             libatomic-ops \
-            libjpeg-turbo \
-            libpng \
+            libjpeg-turbo[tools] \
+            libpng[tools] \
             libraw \
             libwebp \
             nanobind \
-            opencolorio \
-            openexr \
-            openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp,gif,jpegxl,libheif] \
-            openjpeg \
-            openjph \
-            openssl \
+            opencolorio[tools] \
+            openexr[tools] \
+            openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp,gif,jpegxl,libheif,tools] \
+            openjpeg[tools] \
+            openjph[tools] \
+            openssl[tools] \
             pcre2 \
             spdlog \
-            tiff[jpeg,lzma,zip,webp,zstd] \
+            tiff[jpeg,lzma,zip,webp,zstd,tools] \
             yaml-cpp \
             zlib \
             --clean-after-build \
