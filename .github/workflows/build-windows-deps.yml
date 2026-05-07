@@ -64,7 +64,7 @@ jobs:
             libatomic-ops \
             libjpeg-turbo[tools] \
             libpng[tools] \
-            libraw \
+            libraw[openmp] \
             libwebp \
             nanobind \
             opencolorio[tools] \
