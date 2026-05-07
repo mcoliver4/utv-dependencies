@@ -57,7 +57,7 @@ jobs:
             dav1d \
             doctest \
             expat \
-            ffmpeg[all] \
+            ffmpeg[all,ffmpeg,ffprobe,ffplay] \
             freetype[brotli,png,subpixel-rendering,bzip2,zlib] \
             glew \
             imath \
@@ -73,7 +73,7 @@ jobs:
             openjpeg[tools] \
             openjph[tools] \
             openssl[tools] \
-            pcre2 \
+            pcre2[jit] \
             spdlog \
             tiff[jpeg,lzma,zip,webp,zstd,tools] \
             yaml-cpp \
