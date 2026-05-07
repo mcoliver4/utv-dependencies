@@ -121,6 +121,7 @@ jobs:
           cpack -G WIX -C Release --debug --verbose || { echo "WIX LOG:"; cat _CPack_Packages/win64/WIX/wix.log; echo "WXS DUMP:"; cat _CPack_Packages/win64/WIX/*.wxs; exit 1; }
 
       - name: Upload to Release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
