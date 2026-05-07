@@ -124,7 +124,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload windows-x64 build/OpenUTVDeps-26.1.0-win64.msi --clobber || gh release create windows-x64 build/OpenUTVDeps-26.1.0-win64.msi -t "Windows x64 Dependencies" -n "Rolling release powered by vcpkg"
+          VERSION="v26.${{ github.run_number }}"
+          gh release create $VERSION build/OpenUTVDeps-26.1.0-win64.msi -t "Windows x64 Dependencies $VERSION" -n "Automated release powered by vcpkg (Build ${{ github.run_number }})"
 
       - name: Save vcpkg downloads
         uses: actions/cache/save@v5
