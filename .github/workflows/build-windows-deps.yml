@@ -124,8 +124,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="v26.${{ github.run_number }}"
-          gh release create $VERSION build/OpenUTVDeps-26.1.0-win64.msi -t "Windows x64 Dependencies $VERSION" -n "Automated release powered by vcpkg (Build ${{ github.run_number }})"
+          CMAKE_VER=$(grep -i "project(OpenUTVDependencies VERSION" CMakeLists.txt | sed -E 's/.*VERSION ([0-9\.]+).*/\1/')
+          VERSION="v${CMAKE_VER}"
+          gh release create $VERSION build/OpenUTVDeps-${CMAKE_VER}-win64.msi -t "Windows x64 Dependencies $VERSION" -n "Source-driven dependency build ($VERSION)" || gh release upload $VERSION build/OpenUTVDeps-${CMAKE_VER}-win64.msi --clobber
 
       - name: Save vcpkg downloads
         uses: actions/cache/save@v5
