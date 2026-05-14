@@ -1,0 +1,94 @@
+name: Linux (Rocky) - Build Dependencies (vcpkg)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;gha,readwrite"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-rocky:
+    runs-on: ubuntu-latest
+    container: rockylinux:9
+    steps:
+      - name: Install Git and Sudo
+        run: dnf install -y git sudo
+
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Install System Prerequisites
+        run: |
+          dnf install -y epel-release
+          dnf config-manager --set-enabled crb
+          dnf groupinstall -y "Development Tools"
+          dnf install -y \
+            cmake \
+            git \
+            curl \
+            ninja-build \
+            tar \
+            unzip \
+            zip \
+            pkgconfig \
+            libX11-devel \
+            libXft-devel \
+            libXext-devel \
+            mesa-libGL-devel \
+            mesa-libGLU-devel \
+            libXcursor-devel \
+            libXi-devel \
+            libXinerama-devel \
+            libXrandr-devel \
+            fontconfig-devel \
+            alsa-lib-devel \
+            pulseaudio-libs-devel \
+            systemd-devel \
+            libva-devel \
+            libvdpau-devel \
+            perl-IPC-Cmd \
+            perl-FindBin
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
+
+      - name: Install Dependencies
+        run: |
+          vcpkg install --triplet x64-linux --clean-after-build
+
+      - name: Export Binary Archive
+        run: |
+          mkdir -p exported_deps
+          vcpkg export \
+            bdwgc boost dav1d doctest expat ffmpeg freetype glew imath \
+            libatomic-ops libjpeg-turbo libpng libraw libwebp nanobind \
+            opencolorio openexr openimageio openjpeg openjph openssl \
+            pcre2 spdlog tiff yaml-cpp zlib \
+            --raw --output-dir=exported_deps --output=utv-deps-linux-x64
+
+      - name: Package RPM Installer (CPack)
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja ..
+          cpack -G RPM -C Release
+
+      - name: Upload to Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # gh is not installed in the container by default
+          dnf install -y gh
+          CMAKE_VER=$(grep -i "project(OpenUTVDependencies VERSION" CMakeLists.txt | sed -E 's/.*VERSION ([0-9\.]+).*/\1/')
+          VERSION="v${CMAKE_VER}"
+          gh release create $VERSION build/*.rpm -t "Linux x64 Dependencies $VERSION" -n "Source-driven dependency build ($VERSION)" || gh release upload $VERSION build/*.rpm --clobber

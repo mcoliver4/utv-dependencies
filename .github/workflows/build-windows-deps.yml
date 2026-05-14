@@ -9,7 +9,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_cache,readwrite"
+  VCPKG_BINARY_SOURCES: "clear;gha,readwrite"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -25,91 +25,29 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: '4ebb30167f14487dcb71fac13efbf63273ab6a3f'
           vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
+          # Baseline is handled by vcpkg-configuration.json
 
       - name: Force Release Build Only
         run: |
           Add-Content -Path "${{ runner.workspace }}/vcpkg/triplets/x64-windows.cmake" -Value "set(VCPKG_BUILD_TYPE release)" -Encoding ascii
 
-      - name: Restore vcpkg downloads
-        uses: actions/cache/restore@v5
-        with:
-          path: ${{ runner.workspace }}/vcpkg/downloads
-          key: vcpkg-downloads-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
-          restore-keys: |
-            vcpkg-downloads-${{ runner.os }}-
-
-      - name: Restore vcpkg binaries
-        uses: actions/cache/restore@v5
-        with:
-          path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-binaries-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
-          restore-keys: |
-            vcpkg-binaries-${{ runner.os }}-
-
       - name: Install Dependencies
         shell: bash
         run: |
-          vcpkg install \
-            bdwgc \
-            boost \
-            dav1d \
-            doctest \
-            expat \
-            ffmpeg[all,ffmpeg,ffprobe,ffplay] \
-            freetype[brotli,png,subpixel-rendering,bzip2,zlib] \
-            glew \
-            imath \
-            libatomic-ops \
-            libjpeg-turbo[tools] \
-            libpng[tools] \
-            libraw[openmp] \
-            libwebp \
-            nanobind \
-            opencolorio[tools] \
-            openexr[tools] \
-            openimageio[ffmpeg,libraw,freetype,opencolorio,openjpeg,webp,gif,jpegxl,libheif,tools] \
-            openjpeg \
-            openjph[tools] \
-            openssl[tools] \
-            pcre2[jit] \
-            spdlog \
-            tiff[jpeg,lzma,zip,webp,zstd,tools] \
-            yaml-cpp \
-            zlib \
-            --clean-after-build \
-            --triplet x64-windows
+          vcpkg install --triplet x64-windows --clean-after-build
 
       - name: Export Binary Archive
         shell: bash
         run: |
+          # We use the list of top-level dependencies from vcpkg.json for export
+          # Since export --raw doesn't currently support manifest files directly
+          mkdir -p exported_deps
           vcpkg export \
-            bdwgc \
-            boost \
-            dav1d \
-            doctest \
-            expat \
-            ffmpeg \
-            glew \
-            imath \
-            libatomic-ops \
-            libjpeg-turbo \
-            libpng \
-            libraw \
-            libwebp \
-            nanobind \
-            opencolorio \
-            openexr \
-            openimageio \
-            openjpeg \
-            openjph \
-            openssl \
-            pcre2 \
-            spdlog \
-            tiff \
-            yaml-cpp \
-            zlib \
+            bdwgc boost dav1d doctest expat ffmpeg freetype glew imath \
+            libatomic-ops libjpeg-turbo libpng libraw libwebp nanobind \
+            opencolorio openexr openimageio openjpeg openjph openssl \
+            pcre2 spdlog tiff yaml-cpp zlib \
             --raw --output-dir=exported_deps --output=utv-deps-windows-x64
 
       - name: Package MSI Installer (CPack WiX)
@@ -117,8 +55,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -G "Visual Studio 17 2022" ..
-          cpack -G WIX -C Release --debug --verbose || { echo "WIX LOG:"; cat _CPack_Packages/win64/WIX/wix.log; echo "WXS DUMP:"; cat _CPack_Packages/win64/WIX/*.wxs; exit 1; }
+          cmake -G "Visual Studio 18 2026" ..
+          cpack -G WIX -C Release --debug --verbose
 
       - name: Upload to Release
         shell: bash
@@ -128,17 +66,3 @@ jobs:
           CMAKE_VER=$(grep -i "project(OpenUTVDependencies VERSION" CMakeLists.txt | sed -E 's/.*VERSION ([0-9\.]+).*/\1/')
           VERSION="v${CMAKE_VER}"
           gh release create $VERSION build/OpenUTVDeps-${CMAKE_VER}-win64.msi -t "Windows x64 Dependencies $VERSION" -n "Source-driven dependency build ($VERSION)" || gh release upload $VERSION build/OpenUTVDeps-${CMAKE_VER}-win64.msi --clobber
-
-      - name: Save vcpkg downloads
-        uses: actions/cache/save@v5
-        if: always()
-        with:
-          path: ${{ runner.workspace }}/vcpkg/downloads
-          key: vcpkg-downloads-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}
-
-      - name: Save vcpkg binaries
-        uses: actions/cache/save@v5
-        if: always()
-        with:
-          path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-binaries-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/.github/workflows/build-windows-deps.yml') }}

@@ -1,0 +1,85 @@
+name: Linux (Ubuntu) - Build Dependencies (vcpkg)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;gha,readwrite"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Install System Prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            curl \
+            ninja-build \
+            tar \
+            unzip \
+            zip \
+            pkg-config \
+            libx11-dev \
+            libxft-dev \
+            libxext-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libfontconfig1-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libudev-dev \
+            libva-dev \
+            libvdpau-dev
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
+
+      - name: Install Dependencies
+        run: |
+          vcpkg install --triplet x64-linux --clean-after-build
+
+      - name: Export Binary Archive
+        run: |
+          mkdir -p exported_deps
+          vcpkg export \
+            bdwgc boost dav1d doctest expat ffmpeg freetype glew imath \
+            libatomic-ops libjpeg-turbo libpng libraw libwebp nanobind \
+            opencolorio openexr openimageio openjpeg openjph openssl \
+            pcre2 spdlog tiff yaml-cpp zlib \
+            --raw --output-dir=exported_deps --output=utv-deps-linux-x64
+
+      - name: Package DEB Installer (CPack)
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja ..
+          cpack -G DEB -C Release
+
+      - name: Upload to Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CMAKE_VER=$(grep -i "project(OpenUTVDependencies VERSION" CMakeLists.txt | sed -E 's/.*VERSION ([0-9\.]+).*/\1/')
+          VERSION="v${CMAKE_VER}"
+          gh release create $VERSION build/*.deb -t "Linux x64 Dependencies $VERSION" -n "Source-driven dependency build ($VERSION)" || gh release upload $VERSION build/*.deb --clobber
